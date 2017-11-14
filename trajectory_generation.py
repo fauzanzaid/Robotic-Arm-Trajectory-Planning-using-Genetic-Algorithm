@@ -75,6 +75,80 @@ def check_trajectory_validity(trajectories, obstacles):
                     continue
     print(validity)
 
+    
+def path_points(y, epsilon, start, end):
+    '''
+    y = PchipInterpolator object for chromosome
+    epsilon = parameter for distance between points
+    start = (x, y) coordinates of start point
+    end = (x, y) coordinates of end point
+    
+    epsilon usage: increasing it will improve resolition at the cost of more points to work on.
+                   decreasing it will improve computation time at the cost of resolution
+    
+    returns (2 x N) array of (X, Y) coordinates of points, where N = no. of points
+    (N is variable to accomodate for equal disatnce between consecutive points)
+    '''
+    #temporary lists to store x and y coordinates
+    pt_x = [start[0]]
+    pt_y = [start[1]]
+    der = y.derivative()
+    
+    #iterator point
+    x = start[0]
+    
+    while (x < end[0]):
+        del_x = epsilon/np.sqrt(der(x)**2 +1)
+        if (x+del_x) < end[0] :
+            pt_x.append(x+del_x)
+            pt_y.append(y(x+del_x))
+            x += del_x
+        else:
+            pt_x.append(end[0])
+            pt_y.append(end[1])
+            break
+            
+    points = np.zeros([2, len(pt_x)])
+    points[0, :] = np.array(pt_x)
+    points[1, :] = np.array(pt_y)
+
+    return points
+
+
+def fitness_chromosome(theta, mu):
+    '''
+    theta in format of
+    [ th11 th12 th13 th14 ... th1n] 
+    [ th21 th22 th23 th24 ... th2n]
+    theta1 and theta 2 at dicrete pints on the path.
+    internal variables:
+    div = no. of theta divisions, 1 dimension of theta matrix
+    '''
+    #check this while changing code for different input format
+    div = np.shape(theta)[1]
+    
+    theta_i = theta[:, 0:div-2]
+    theta_j = theta[:, 1:div-1]
+    del_theta = abs(theta_j - theta_i)
+    fitness = 0
+    for i in range(div-2):
+        fitness += mu*del_theta[0, i] + (1-mu)*del_theta[1, i]
+    return fitness
+
+def testing_2():
+    #test case
+    X = [1, 2, 3, 4, 5, 6]
+    Y = [0, 2, 3, 3, 2, 0]
+    y = sc.PchipInterpolator(X, Y)
+    epsilon = 0.01
+    start = [1, 0]
+    end = [6, 0]
+
+    k = path_points(y, epsilon, start, end)
+    print(k)
+    plt.plot(k[0, :], k[1, :], 'ro')
+    plt.show()
+    print(fitness_chromosome(k, 0.5))
 
 def testing():
     test_mat = np.array([[1.1, 2.2, 1.5, 2, -1, 1.3],
