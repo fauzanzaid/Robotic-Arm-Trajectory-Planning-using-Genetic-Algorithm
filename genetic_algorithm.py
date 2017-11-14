@@ -2,6 +2,19 @@ import numpy as np
 np.random.seed(1)
 
 
+def n_obstacles_interior(points_obs):
+    points_obs = np.array(points_obs)
+    x_interior = points_obs[:,0]
+    y_interior = points_obs[:,1]
+    distance = np.sqrt((x_interior-2047.5)*(x_interior-2047.5)+(y_interior-2047.5)*(y_interior-2047.5)) #distance of interior point from centre
+    #taking only valid interior points (i.e. points between R1 and R2)
+    distance = (distance>R2)
+    x_interior = x_interior*distance
+    x_points = x_interior[x_interior>0]
+    y_interior = y_interior*distance
+    y_points = y_interior[y_interior>0]
+
+
 def chromosome_init(population_size,k,x_points,y_points):
     chromosome = np.zeros((population_size,2*k))
     a = np.random.randint(len(x_points),size=(population_size,k))
@@ -13,12 +26,12 @@ def chromosome_init(population_size,k,x_points,y_points):
 
 
 
-  L = 12
+L = 12
 k = 2                       #input
-x_min = 0                   #input
-x_max = pow(2,L)-1          #input
-y_min = 0                   #input
-y_max = pow(2,L)-1          #input
+x_min = 0                   
+x_max = pow(2,L)-1          
+y_min = 0                   
+y_max = pow(2,L)-1          
 L1 = 1500                   #input (length of link1)
 L2 = 547.5                  #input (length of link2)
 R1 = L1+L2           
