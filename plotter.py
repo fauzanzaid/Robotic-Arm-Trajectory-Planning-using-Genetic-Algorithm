@@ -25,18 +25,12 @@ class Plotter():
 		The above two coordinates are for plotting points only. No
 		caculation of link angles takes place in this class
 	"""
-	def __init__(self, link_lengths, link_angles_init, start_cood, end_cood):
-		self.link_lengths = link_lengths
-		self.link_angles = link_angles_init
-		self.start_cood = start_cood
-		self.end_cood = end_cood
-		self.obs_coods = []
-
-		self.axis_limit = sum(link_lengths)
-
-
-	def add_obstacle_cood(self, cood):
-		self.obs_coods.append(cood)
+	def __init__(self):
+		self.link_lengths = None
+		self.link_angles = None
+		self.start_cood = None
+		self.end_cood = None
+		self.obs_coods = None
 
 
 	def plot_grids(self, ax):
@@ -92,24 +86,11 @@ class Plotter():
 		link.set_ydata(coods_y)
 
 
-	def env_set_plot_lims(self, ax):
+	def plot_set_lims(self, ax):
 		ax.axis('scaled')
-		ax.set_xlim(-1.2*self.axis_limit, 1.2*self.axis_limit)
-		ax.set_ylim(-1.2*self.axis_limit, 1.2*self.axis_limit)
-
-
-	def env_plot(self, ax):
-		self.plot_grids(ax)
-		self.plot_terminals(ax)
-		self.plot_obstacles(ax)
-		self.plot_links(ax)
-		self.env_set_plot_lims(ax)
-
-
-	def env_show(self):
-		fig,ax = plt.subplots()
-		self.env_plot(ax)
-		plt.show()
+		axis_limit = 1.2*sum(self.link_lengths)
+		ax.set_xlim(-axis_limit, axis_limit)
+		ax.set_ylim(-axis_limit, axis_limit)
 
 
 	def plot_end_path(self, ax, xs, ys):
@@ -120,22 +101,29 @@ class Plotter():
 		ax.plot(xs, ys, '--', c="0.8")
 
 
-	def transition_set_plot_lims(self, ax):
-		ax.axis('scaled')
-		ax.set_xlim(-1.2*self.axis_limit, 1.2*self.axis_limit)
-		ax.set_ylim(-1.2*self.axis_limit, 1.2*self.axis_limit)
+	def static_plot(self, ax):
+		self.plot_grids(ax)
+		self.plot_terminals(ax)
+		self.plot_obstacles(ax)
+		self.plot_links(ax)
+		self.plot_set_lims(ax)
 
+
+	def static_show(self):
+		fig,ax = plt.subplots()
+		self.static_plot(ax)
+		plt.show()
 
 
 	"""
 	link_angles_series: A time series 2d numpy array. Each element
 		is a link_angles aray, indexed by time
 	"""
-	def transition_plot_static(self, ax, coods_series):
+	def transition_plot_base(self, ax, coods_series):
 		self.plot_grids(ax)
 		self.plot_terminals(ax)
 		self.plot_obstacles(ax)
-		self.transition_set_plot_lims(ax)
+		self.plot_set_lims(ax)
 
 		coods_x_series, coods_y_series = coods_series
 		self.plot_end_path(ax, coods_x_series.T[-1], coods_y_series.T[-1])
@@ -151,7 +139,7 @@ class Plotter():
 
 		coods_series = self.get_coods_series_from_link_angles_series(link_angles_series)
 
-		self.transition_plot_static(ax_main, coods_series)
+		self.transition_plot_base(ax_main, coods_series)
 		link = self.plot_links_by_time(ax_main, coods_series, 0)
 
 
