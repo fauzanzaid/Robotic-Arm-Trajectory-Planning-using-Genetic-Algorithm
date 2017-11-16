@@ -25,18 +25,12 @@ class Plotter():
 		The above two coordinates are for plotting points only. No
 		caculation of link angles takes place in this class
 	"""
-	def __init__(self, link_lengths, link_angles_init, start_cood, end_cood):
-		self.link_lengths = link_lengths
-		self.link_angles = link_angles_init
-		self.start_cood = start_cood
-		self.end_cood = end_cood
-		self.obs_coods = []
-
-		self.axis_limit = sum(link_lengths)
-
-
-	def add_obstacle_cood(self, cood):
-		self.obs_coods.append(cood)
+	def __init__(self):
+		self.link_lengths = None
+		self.link_angles = None
+		self.start_cood = None
+		self.end_cood = None
+		self.obs_coods = None
 
 
 	def plot_grids(self, ax):
@@ -63,6 +57,25 @@ class Plotter():
 		for i,cood in enumerate(self.obs_coods):
 			ax.plot(*cood, 'r^')
 			ax.annotate(r'$P_{o'+str(i)+r'}$', xy=cood, xytext=(5,-10), textcoords='offset points')
+
+	def plot_start_point(self, ax):
+		point = ax.plot(*self.start_cood, 'bo')
+		label = ax.annotate(r'$P_s$', xy=self.start_cood, xytext=(5,-10), textcoords='offset points')
+		return point, label
+
+
+	def plot_end_point(self, ax):
+		point = ax.plot(*self.end_cood, 'go')
+		label = ax.annotate(r'$P_t$', xy=self.end_cood, xytext=(5,-10), textcoords='offset points')
+		return point, label
+
+
+	def plot_obs_point(self, ax, cood=None, label_idx=""):
+		if cood == None:
+			cood = self.obs_coods[-1]
+		point = ax.plot(*cood, 'r^')
+		label = ax.annotate(r'$P_{o'+str(label_idx)+r'}$', xy=cood, xytext=(5,-10), textcoords='offset points')
+		return point, label
 
 
 	def plot_links(self, ax, *args):
@@ -92,24 +105,11 @@ class Plotter():
 		link.set_ydata(coods_y)
 
 
-	def env_set_plot_lims(self, ax):
+	def plot_set_lims(self, ax):
 		ax.axis('scaled')
-		ax.set_xlim(-1.2*self.axis_limit, 1.2*self.axis_limit)
-		ax.set_ylim(-1.2*self.axis_limit, 1.2*self.axis_limit)
-
-
-	def env_plot(self, ax):
-		self.plot_grids(ax)
-		self.plot_terminals(ax)
-		self.plot_obstacles(ax)
-		self.plot_links(ax)
-		self.env_set_plot_lims(ax)
-
-
-	def env_show(self):
-		fig,ax = plt.subplots()
-		self.env_plot(ax)
-		plt.show()
+		axis_limit = 1.2*sum(self.link_lengths)
+		ax.set_xlim(-axis_limit, axis_limit)
+		ax.set_ylim(-axis_limit, axis_limit)
 
 
 	def plot_end_path(self, ax, xs, ys):
@@ -120,22 +120,29 @@ class Plotter():
 		ax.plot(xs, ys, '--', c="0.8")
 
 
-	def transition_set_plot_lims(self, ax):
-		ax.axis('scaled')
-		ax.set_xlim(-1.2*self.axis_limit, 1.2*self.axis_limit)
-		ax.set_ylim(-1.2*self.axis_limit, 1.2*self.axis_limit)
+	def static_plot(self, ax):
+		self.plot_grids(ax)
+		self.plot_terminals(ax)
+		self.plot_obstacles(ax)
+		self.plot_links(ax)
+		self.plot_set_lims(ax)
 
+
+	def static_show(self):
+		fig,ax = plt.subplots()
+		self.static_plot(ax)
+		plt.show()
 
 
 	"""
 	link_angles_series: A time series 2d numpy array. Each element
 		is a link_angles aray, indexed by time
 	"""
-	def transition_plot_static(self, ax, coods_series):
+	def transition_plot_base(self, ax, coods_series):
 		self.plot_grids(ax)
 		self.plot_terminals(ax)
 		self.plot_obstacles(ax)
-		self.transition_set_plot_lims(ax)
+		self.plot_set_lims(ax)
 
 		coods_x_series, coods_y_series = coods_series
 		self.plot_end_path(ax, coods_x_series.T[-1], coods_y_series.T[-1])
@@ -151,7 +158,7 @@ class Plotter():
 
 		coods_series = self.get_coods_series_from_link_angles_series(link_angles_series)
 
-		self.transition_plot_static(ax_main, coods_series)
+		self.transition_plot_base(ax_main, coods_series)
 		link = self.plot_links_by_time(ax_main, coods_series, 0)
 
 
@@ -162,6 +169,74 @@ class Plotter():
 		slider.on_changed(on_slider_upd)
 
 		plt.show()
+
+
+	def picker_plot_base(self, ax):
+		self.plot_grids(ax)
+		self.plot_set_lims(ax)
+
+
+	def picker_show(self):
+		fig,ax = plt.subplots()
+		self.picker_plot_base(ax)
+
+
+		# Remove any previous bindings to start afresh
+		self.start_cood = None
+		self.end_cood = None
+		self.obs_coods = []
+
+		ax_title = ax.set_title("Pick start point")
+
+		# Store the artists for possible future use
+		start_point = None
+		end_point = None
+		obs_points = []
+
+		start_label = None
+		end_label = None
+		obs_labels = []
+
+		def on_click(event):
+
+			# Ensure left mouse click, within axes bounds
+			if event.button != 1 or event.xdata == None or event.ydata == None:
+				return
+
+			nonlocal ax_title
+
+			nonlocal start_point
+			nonlocal end_point
+			nonlocal obs_points
+
+			nonlocal start_label
+			nonlocal end_label
+			nonlocal obs_labels
+
+			cood = [event.xdata, event.ydata]
+
+			if self.start_cood == None:
+				self.start_cood = cood
+				start_point, start_label = self.plot_start_point(ax)
+				ax_title.set_text("Pick end point")
+
+			elif self.end_cood == None:
+				self.end_cood = cood
+				end_point, end_label = self.plot_end_point(ax)
+				ax_title.set_text("Pick obstacle points")
+
+			else:
+				self.obs_coods.append(cood)
+				obs_point, obs_label = self.plot_obs_point(ax, label_idx=len(self.obs_coods)-1)
+				obs_points.append(obs_point)
+				obs_labels.append(obs_labels)
+
+			fig.canvas.draw()
+
+		cid = fig.canvas.mpl_connect("button_release_event", on_click)
+		plt.show()
+		fig.canvas.mpl_disconnect(cid)
+
 
 
 	def get_coods_from_link_angles(self, *args):
@@ -198,5 +273,3 @@ class Plotter():
 		coods_y_series = np.array(coods_y_series)
 		
 		return coods_x_series, coods_y_series
-
-
