@@ -58,6 +58,25 @@ class Plotter():
 			ax.plot(*cood, 'r^')
 			ax.annotate(r'$P_{o'+str(i)+r'}$', xy=cood, xytext=(5,-10), textcoords='offset points')
 
+	def plot_start_point(self, ax):
+		point = ax.plot(*self.start_cood, 'bo')
+		label = ax.annotate(r'$P_s$', xy=self.start_cood, xytext=(5,-10), textcoords='offset points')
+		return point, label
+
+
+	def plot_end_point(self, ax):
+		point = ax.plot(*self.end_cood, 'go')
+		label = ax.annotate(r'$P_t$', xy=self.end_cood, xytext=(5,-10), textcoords='offset points')
+		return point, label
+
+
+	def plot_obs_point(self, ax, cood=None, label_idx=""):
+		if cood == None:
+			cood = self.obs_coods[-1]
+		point = ax.plot(*cood, 'r^')
+		label = ax.annotate(r'$P_{o'+str(label_idx)+r'}$', xy=cood, xytext=(5,-10), textcoords='offset points')
+		return point, label
+
 
 	def plot_links(self, ax, *args):
 		if args:
@@ -152,6 +171,74 @@ class Plotter():
 		plt.show()
 
 
+	def picker_plot_base(self, ax):
+		self.plot_grids(ax)
+		self.plot_set_lims(ax)
+
+
+	def picker_show(self):
+		fig,ax = plt.subplots()
+		self.picker_plot_base(ax)
+
+
+		# Remove any previous bindings to start afresh
+		self.start_cood = None
+		self.end_cood = None
+		self.obs_coods = []
+
+		ax_title = ax.set_title("Pick start point")
+
+		# Store the artists for possible future use
+		start_point = None
+		end_point = None
+		obs_points = []
+
+		start_label = None
+		end_label = None
+		obs_labels = []
+
+		def on_click(event):
+
+			# Ensure left mouse click, within axes bounds
+			if event.button != 1 or event.xdata == None or event.ydata == None:
+				return
+
+			nonlocal ax_title
+
+			nonlocal start_point
+			nonlocal end_point
+			nonlocal obs_points
+
+			nonlocal start_label
+			nonlocal end_label
+			nonlocal obs_labels
+
+			cood = [event.xdata, event.ydata]
+
+			if self.start_cood == None:
+				self.start_cood = cood
+				start_point, start_label = self.plot_start_point(ax)
+				ax_title.set_text("Pick end point")
+
+			elif self.end_cood == None:
+				self.end_cood = cood
+				end_point, end_label = self.plot_end_point(ax)
+				ax_title.set_text("Pick obstacle points")
+
+			else:
+				self.obs_coods.append(cood)
+				obs_point, obs_label = self.plot_obs_point(ax, label_idx=len(self.obs_coods)-1)
+				obs_points.append(obs_point)
+				obs_labels.append(obs_labels)
+
+			fig.canvas.draw()
+
+		cid = fig.canvas.mpl_connect("button_release_event", on_click)
+		plt.show()
+		fig.canvas.mpl_disconnect(cid)
+
+
+
 	def get_coods_from_link_angles(self, *args):
 		coods_y = [0]
 		coods_x = [0]
@@ -186,5 +273,3 @@ class Plotter():
 		coods_y_series = np.array(coods_y_series)
 		
 		return coods_x_series, coods_y_series
-
-
