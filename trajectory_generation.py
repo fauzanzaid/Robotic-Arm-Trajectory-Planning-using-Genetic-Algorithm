@@ -186,14 +186,14 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
 
     formatted_pop = format(population)
     pt_validity = check_point_validity(formatted_pop, link_len, start_pt, end_pt)
-    print(pt_validity)
+    #print(pt_validity)
     for i in range(len(fitness_calculated)):
         if pt_validity[i] == False:
             cost_pop[i] = np.inf
             fitness_calculated[i] = True
 
     points, trajectories = generate_trajectories(formatted_pop, start_pt, end_pt, fitness_calculated)
-    print(trajectories)
+    #print(trajectories)
     for i in range(pop_size):
         if fitness_calculated[i] == False:
             traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
@@ -263,7 +263,7 @@ def testing_fitness2():
     pop = np.array([[-2, 2, -1.8, 2, 2, 2]])
     print(fitness_population(pop, [2, 2], [-4, 0], [4, 0], [0, 5], .1, [.5]))
 
-testing_fitness2()
+#testing_fitness2()
 
 def test_time():
     print(timeit.timeit(testing_fitness2(),
