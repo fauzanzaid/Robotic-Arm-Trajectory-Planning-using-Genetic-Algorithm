@@ -2,6 +2,7 @@ import numpy as np
 import scipy.interpolate as sc
 import matplotlib.pyplot as plt
 import three_link
+import invkin
 import timeit
 
 '''
@@ -38,7 +39,7 @@ def generate_trajectories(formatted_population, start, end, fitness_calculated):
         right_end = end
     else:
         left_end = end
-    population_trajectories = [False for g in shape[0]]
+    population_trajectories = [False for g in range(shape[0])]
     trajectory_points = np.zeros([shape[0], shape[1] + 2, shape[2]])
     for i in range(shape[0]):
         if fitness_calculated:
@@ -163,7 +164,10 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     5. Path checking        (check order here)
     5. fitness calculation
     """
-    arm1 = three_link.Arm3Link(link_len)
+    if len(link_len) == 3:
+        arm1 = three_link.Arm3Link(link_len)
+    elif len(link_len) == 2:
+        arm1 = invkin.Arm(link_len)
 
     pop_size = np.shape(population)[0]
 
