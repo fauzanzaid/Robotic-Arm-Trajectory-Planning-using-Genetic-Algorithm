@@ -37,7 +37,7 @@ class GeneticAlgorithm:
 
 
     def n_obstacles_interior(self):
-        if len(obs_coods):
+        if len(self.obs_coods) == 0:
             return 0
         obs_coods = np.array(self.obs_coods)
         x_interior = obs_coods[:,0]
