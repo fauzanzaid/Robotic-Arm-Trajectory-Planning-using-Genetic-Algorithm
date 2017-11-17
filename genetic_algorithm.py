@@ -5,7 +5,7 @@ np.random.seed(1)
 
 class GeneticAlgorithm:
     
-    def __init__(self, link_lengths, start_cood, end_cood, obs_coods, fitness, mu=[0.4,0.2,0.1], epsilon=0.1, population_size=120, mutation_percent=0.05, generations=500):
+    def __init__(self, link_lengths, start_cood, end_cood, obs_coods, fitness, mu=[0.4,0.2], epsilon=0.1, population_size=120, mutation_percent=0.05, generations=500):
         self.L1 = link_lengths[0]
         self.L2 = link_lengths[1]
         
@@ -37,6 +37,8 @@ class GeneticAlgorithm:
 
 
     def n_obstacles_interior(self):
+        if len(obs_coods):
+            return 0
         obs_coods = np.array(self.obs_coods)
         x_interior = obs_coods[:,0]
         y_interior = obs_coods[:,1]
