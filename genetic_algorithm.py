@@ -48,6 +48,10 @@ class GeneticAlgorithm:
         return len(x_points)
 
 
+    def chromosome_to_points(self, chromosome):
+        return (chromosome)*(2*self.R1)/(2**self.L-1) - self.R1
+
+
     def chromosome_init(self):
         chromosome = np.zeros((self.population_size,2*self.k))
         # print(chromosome)
@@ -73,7 +77,7 @@ class GeneticAlgorithm:
     def run(self):
         chromosome = self.chromosome_init()    #getting initial random chromosome
 
-        fitness_row = self.fitness(chromosome, *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
+        fitness_row = self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
         # fitness_row = np.random.rand(self.population_size)  #remove it later on
 
         # s = 0
@@ -114,7 +118,7 @@ class GeneticAlgorithm:
             chromosome = new_chromosome
             # s = s+1               #incrementing generation
 
-            fitness_row = self.fitness(chromosome, *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
+            fitness_row = self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
             # fitness_row = np.random.rand(self.population_size)  #remove it later on
             self.fitness_stats.append(max(fitness_row))
         
