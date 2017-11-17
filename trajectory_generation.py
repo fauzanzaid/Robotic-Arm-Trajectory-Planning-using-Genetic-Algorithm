@@ -65,7 +65,7 @@ def format(population) -> object:
     return formatted_population
 
 
-def check_point_validity(formatted_population, link_len) -> list:
+def check_point_validity(formatted_population, link_len, start, end) -> list:
     '''
     :param sorted_population: 3D array of sorted population matrix
     :param link1: length of link 1
@@ -73,10 +73,19 @@ def check_point_validity(formatted_population, link_len) -> list:
     :return: validity: list of indexed validity values. could be used for setting fitness to zero.
     '''
     shape = np.shape(formatted_population)
+    left_end, right_end = start, start
+    if start[0] < end[0]:
+        right_end = end
+    else:
+        left_end = end
     validity = []
     for i in range(shape[0]):
         r = np.linalg.norm(formatted_population[i, :, :], axis=1)
-        if np.all(r > link_len[0]):
+        if np.any(formatted_population[i, :, 0] < left_end[0]):
+            validity.append(False)
+        elif np.any(formatted_population[i, :, 0] > right_end[0]):
+            validity.append(False)
+        elif np.all(r > link_len[0]):
             if np.all(r < (sum(link_len))):
                 validity.append(True)
             else:
