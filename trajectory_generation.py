@@ -39,10 +39,11 @@ def generate_trajectories(formatted_population, start, end, fitness_calculated):
         right_end = end
     else:
         left_end = end
+
     population_trajectories = [False for g in range(shape[0])]
     trajectory_points = np.zeros([shape[0], shape[1] + 2, shape[2]])
     for i in range(shape[0]):
-        if fitness_calculated:
+        if fitness_calculated[i]:
             continue
         ch_with_start = np.insert(formatted_population[i, :, :], 0, left_end, axis=0)
         chrome_all_pts = np.insert(ch_with_start, (shape[1] + 1), right_end, axis=0)
@@ -132,7 +133,7 @@ def path_points(y, epsilon, start, end):
     # iterator point
     x = start[0]
 
-    if start[0] < end[0]:   #start point is on left side
+    if start[0] < end[0]:  # start point is on left side
         while x < end[0]:
             del_x = epsilon / np.sqrt(der(x) ** 2 + 1)
             if (x + del_x) < end[0]:
@@ -185,15 +186,16 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
 
     formatted_pop = format(population)
     pt_validity = check_point_validity(formatted_pop, link_len, start_pt, end_pt)
+    print(pt_validity)
     for i in range(len(fitness_calculated)):
         if pt_validity[i] == False:
             cost_pop[i] = np.inf
             fitness_calculated[i] = True
 
     points, trajectories = generate_trajectories(formatted_pop, start_pt, end_pt, fitness_calculated)
-
+    print(trajectories)
     for i in range(pop_size):
-        if fitness_calculated == False:
+        if fitness_calculated[i] == False:
             traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
             theta = np.array(arm1.time_series(traj_points))
             validity = check_trajectory_validity(trajectories[i], obstacles)
@@ -203,8 +205,9 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
                 cost_pop[i] = fitness_chrome(theta, mu)
             fitness_calculated[i] = True
 
-    fitness_pop = 1/np.array(cost_pop)
-        
+    # fitness_pop = 1/np.array(cost_pop)
+    fitness_pop = np.array(cost_pop)
+
     return np.array(fitness_pop)
 
 
@@ -230,7 +233,7 @@ def fitness_chrome(theta, mu):
     del_theta = abs(theta_j - theta_i)
     fitness = 0
     for i in range(div - 2):
-        for j in len(mu):
+        for j in range(len(mu)):
             fitness += mu[j] * theta[j, i]
     return fitness
 
@@ -257,7 +260,11 @@ def testing_fitness():
 
 
 def testing_fitness2():
-    pop = np.array([[-2, 2, -1.8, 2, 1, 1]])
-    print(fitness_population(pop, [2, 2], [-4, 0], [4, 0], [0, 5], .1, .5))
+    pop = np.array([[-2, 2, -1.8, 2, 2, 2]])
+    print(fitness_population(pop, [2, 2], [-4, 0], [4, 0], [0, 5], .1, [.5]))
 
-#print(timeit.timeit(testing_fitness2(), 'import numpy as np import scipy.interpolate as sc import matplotlib.pyplot as plt', 10))
+testing_fitness2()
+
+def test_time():
+    print(timeit.timeit(testing_fitness2(),
+                        'import numpy as np import scipy.interpolate as sc import matplotlib.pyplot as plt', 10))
