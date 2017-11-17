@@ -25,7 +25,7 @@ class GeneticAlgorithm:
         self.y_max = pow(2,self.L)-1          
         
         self.R1 = sum(link_lengths)
-        self.R2 = self.L1-sum(link_lengths[1:])
+        self.R2 = self.L1
         if self.R2 < 0: self.R2 = 0
 
         self.population_size = population_size
@@ -44,7 +44,7 @@ class GeneticAlgorithm:
         y_interior = obs_coods[:,1]
         distance = np.sqrt((x_interior-2047.5)*(x_interior-2047.5)+(y_interior-2047.5)*(y_interior-2047.5)) #distance of interior point from centre
         #taking only valid interior points (i.e. points between R1 and R2)
-        distance = (distance>self.R2)
+        distance = (distance<self.R2)
         x_interior = x_interior*distance
         x_points = x_interior[x_interior>0]
         return len(x_points)
@@ -123,7 +123,7 @@ class GeneticAlgorithm:
             fitness_row = self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
             # fitness_row = np.random.rand(self.population_size)  #remove it later on
             self.fitness_stats.append(max(fitness_row))
-        
+            print(fitness_row)
 
         fitness_row = self.fitness(chromosome, *self.fitness_params)
         max_idx = np.argmax(fitness_row)
