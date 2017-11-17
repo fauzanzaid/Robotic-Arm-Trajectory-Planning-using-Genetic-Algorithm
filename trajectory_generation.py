@@ -19,7 +19,6 @@ check_point_validity(sorted_population, link1, link2)
 
 
 def generate_trajectories(sorted_population, start, end, fitness_calculated):
-    #Every chromosome's points are seperated and arranged in form of x and y cooridnates. \
     # Every chromosome's points are seperated and arranged in form of x and y cooridnates. \
     # It is then arranged in the order of x coordinated. Start and End point coordinates are then added to the array.
     # then the trajectories are generated.
