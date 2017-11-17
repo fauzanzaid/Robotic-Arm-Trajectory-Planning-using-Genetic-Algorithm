@@ -123,7 +123,7 @@ class GeneticAlgorithm:
             self.fitness_stats.append(max(fitness_row))
         
 
-        fitness_row = self.fitness(chromosome)
+        fitness_row = self.fitness(chromosome, *self.fitness_params)
         max_idx = np.argmax(fitness_row)
         return chromosome[max_idx]
     
