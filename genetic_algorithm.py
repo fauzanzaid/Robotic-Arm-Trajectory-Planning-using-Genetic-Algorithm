@@ -42,12 +42,11 @@ class GeneticAlgorithm:
         obs_coods = np.array(self.obs_coods)
         x_interior = obs_coods[:,0]
         y_interior = obs_coods[:,1]
-        distance = np.sqrt((x_interior-2047.5)*(x_interior-2047.5)+(y_interior-2047.5)*(y_interior-2047.5)) #distance of interior point from centre
+        distance = np.sqrt(x_interior**2+y_interior**2) #distance of interior point from centre
         #taking only valid interior points (i.e. points between R1 and R2)
+        
         distance = (distance<self.R2)
-        x_interior = x_interior*distance
-        x_points = x_interior[x_interior>0]
-        return len(x_points)
+        return len(distance[distance==True])
 
 
     def chromosome_to_points(self, chromosome):
