@@ -124,9 +124,14 @@ class Plotter():
 		self.plot_grids(ax)
 		self.plot_terminals(ax)
 		self.plot_obstacles(ax)
-		self.plot_links(ax)
+		self.plot_set_lims(ax)
 		self.plot_set_lims(ax)
 
+
+	def static_show(self):
+		fig,ax = plt.subplots()
+		self.static_plot(ax)
+		plt.show()
 
 	def static_show(self):
 		fig,ax = plt.subplots()
