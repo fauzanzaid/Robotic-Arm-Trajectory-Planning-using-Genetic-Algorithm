@@ -124,7 +124,6 @@ class Plotter():
 		self.plot_grids(ax)
 		self.plot_terminals(ax)
 		self.plot_obstacles(ax)
-		self.plot_links(ax)
 		self.plot_set_lims(ax)
 
 
