@@ -73,13 +73,26 @@ class GeneticAlgorithm:
                     chromosome[i] = np.ravel(random_chrom)
 
         return chromosome
-  
+
+
+    def fitness_mod(self,chromosome):
+        fitness_row = 1/self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)
+        for i,v in enumerate(fitness_row):
+            if np.isnan(v):
+                fitness_row[i] = 0
+            else:
+                fitness_row[i] = abs(v)
+        return fitness_row
+
 
     def run(self):
         chromosome = self.chromosome_init()    #getting initial random chromosome
+        # print(chromosome)
 
-        fitness_row = self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
+        # fitness_row = self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
+        fitness_row = self.fitness_mod(chromosome)
         # fitness_row = np.random.rand(self.population_size)  #remove it later on
+        # print(fitness_row)
 
         # s = 0
         # while(s<self.generations):
@@ -93,13 +106,15 @@ class GeneticAlgorithm:
             for i in range(int(self.population_size/2)):                  #crossover
                 a = np.random.rand(2)
                 index = np.searchsorted(roulette_wheel_cdf, a)  
-                
+
                 parent = np.array([chromosome[index[0]], chromosome[index[1]]])
 
                 new_chromosome[2*i+0,0:2*crossover_point+1] = parent[0,0:2*crossover_point+1]
                 new_chromosome[2*i+0,2*crossover_point+1:2*self.k] = parent[1,2*crossover_point+1:2*self.k]
                 new_chromosome[2*i+1,0:2*crossover_point+1] = parent[1,0:2*crossover_point+1]
                 new_chromosome[2*i+1,2*crossover_point+1:2*self.k] = parent[0,2*crossover_point+1:2*self.k]
+
+            # print(new_chromosome)
 
             for i in range(self.population_size):                                 #mutation
                 if (np.random.rand() < self.mutation_percent):
@@ -119,11 +134,15 @@ class GeneticAlgorithm:
             chromosome = new_chromosome
             # s = s+1               #incrementing generation
 
-            fitness_row = self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
+            # fitness_row = self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
+            fitness_row = self.fitness_mod(chromosome)
             # fitness_row = np.random.rand(self.population_size)  #remove it later on
             self.fitness_stats.append(max(fitness_row))
+            # print(fitness_row)
 
-        fitness_row = self.fitness(chromosome, *self.fitness_params)
+        # print(chromosome)
+        # fitness_row = self.fitness(chromosome, *self.fitness_params)
+        fitness_row = self.fitness_mod(chromosome)
         max_idx = np.argmax(fitness_row)
-        return chromosome[max_idx]
+        return (self.chromosome_to_points(chromosome))[max_idx]
     
