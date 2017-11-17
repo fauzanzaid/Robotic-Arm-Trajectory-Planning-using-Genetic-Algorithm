@@ -56,7 +56,7 @@ def format(population) -> object:
     return formatted_population
 
 
-def check_point_validity(formatted_population, link1, link2) -> list:
+def check_point_validity(formatted_population, link_len) -> list:
     '''
     :param sorted_population: 3D array of sorted population matrix
     :param link1: length of link 1
@@ -67,8 +67,8 @@ def check_point_validity(formatted_population, link1, link2) -> list:
     validity = []
     for i in range(shape[0]):
         r = np.linalg.norm(formatted_population[i, :, :], axis=1)
-        if np.all(r > link1):
-            if np.all(r < (link1 + link2)):
+        if np.all(r > link_len[0]):
+            if np.all(r < (sum(link_len))):
                 validity.append(True)
             else:
                 validity.append(False)
@@ -144,7 +144,6 @@ def path_points(y, epsilon, start, end):
 
 def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilon, mu):
     """
-    :param
     envelope function for complete fitness calculation
     Order of operations:
     1. point checking       (set fitness to zero for invalid)
@@ -154,7 +153,7 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     5. Path checking        (check order here)
     5. fitness calculation
     """
-    link1, link2 = link_len[0], link_len[1]
+
     arm1 = three_link.Arm3Link(link_len)
 
     pop_size = np.shape(population)[0]
@@ -163,7 +162,7 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     fitness_calculated = [False for i in range(pop_size)]  # stores fitness calculation validity
 
     formatted_pop = format(population)
-    pt_validity = check_point_validity(formatted_pop, link1, link2)
+    pt_validity = check_point_validity(formatted_pop, link_len)
     for i in range(len(fitness_calculated)):
         if pt_validity[i] == False:
             cost_pop[i] = np.inf
