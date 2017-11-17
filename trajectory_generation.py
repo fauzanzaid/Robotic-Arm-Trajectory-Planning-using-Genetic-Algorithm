@@ -2,6 +2,7 @@ import numpy as np
 import scipy.interpolate as sc
 import matplotlib.pyplot as plt
 #import three_arm
+import timeit
 
 '''
 generate_trajectories(sorted_population, start, end) : 
@@ -75,16 +76,6 @@ def check_point_validity(formatted_population, link1, link2) -> list:
             validity.append(False)
 
     return validity
-
-
-def cleanse_chromosomes(sorted_population, validity):
-    ''' maybe not required '''
-    size = len(validity)
-    clean_population = sorted_population
-    for i in range(size):
-        if validity[size - i - 1] == False:
-            clean_population = np.delete(clean_population, (size - i - 1), axis=0)
-    return clean_population
 
 
 def check_trajectory_validity(trajectory, obstacles):
@@ -247,5 +238,8 @@ def testing_fitness():
 
 
 def testing_fitness2():
+
     pop = np.array([[-2, 2, -1.8, 2, 1, 1]])
     print(fitness_population(pop, [2, 2], [-4, 0], [4, 0], [0, 5], .1, .5))
+
+print(timeit.timeit(testing_fitness2(), 'import numpy as np import scipy.interpolate as sc import matplotlib.pyplot as plt', 10))
