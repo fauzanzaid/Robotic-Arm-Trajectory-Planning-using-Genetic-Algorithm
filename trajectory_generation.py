@@ -193,16 +193,14 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     points, trajectories = generate_trajectories(formatted_pop, start_pt, end_pt, fitness_calculated)
 
     for i in range(pop_size):
-        traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
-
-        theta = np.array(arm1.time_series(traj_points))
-
-        validity = check_trajectory_validity(trajectories[i], obstacles)
-        if validity == False:
-            cost_pop[i] = np.inf
-            fitness_calculated[i] = True
-        else:
-            cost_pop[i] = fitness_chrome(theta, mu)
+        if fitness_calculated == False:
+            traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
+            theta = np.array(arm1.time_series(traj_points))
+            validity = check_trajectory_validity(trajectories[i], obstacles)
+            if validity == False:
+                cost_pop[i] = np.inf
+            else:
+                cost_pop[i] = fitness_chrome(theta, mu)
             fitness_calculated[i] = True
 
     fitness_pop = 1/np.array(cost_pop)
