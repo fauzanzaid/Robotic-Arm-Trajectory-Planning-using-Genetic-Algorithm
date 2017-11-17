@@ -19,25 +19,33 @@ check_point_validity(sorted_population, link1, link2)
 '''
 
 
-def generate_trajectories(sorted_population, start, end, fitness_calculated):
-    # Every chromosome's points are seperated and arranged in form of x and y cooridnates. \
+def generate_trajectories(formatted_population, start, end, fitness_calculated):
+    '''
+    :param sorted_population: (P x K x 2) array of formatted population
+    :param start: (x, y) cords of start point
+    :param end: (x, y) coords of end point
+    :param fitness_calculated: boolean list stating whether a chromosome's fitness has been calculated.
+                               only those chromosome's values are calculated, whose points are not valid.
+    :return: trajectory_points: a (P x (N+2) x 2) array of all internal and end points
+             population_trajectories: list of all population trajectories. Invalid chromosomes have 'False' in their index
+    '''
+    # Every chromosome's points are seperated and arranged in form of x and y coordinates.
     # It is then arranged in the order of x coordinated. Start and End point coordinates are then added to the array.
     # then the trajectories are generated.
-    shape = np.shape(sorted_population)
+    shape = np.shape(formatted_population)
     left_end, right_end = start, start
     if start[0] < end[0]:
         right_end = end
     else:
         left_end = end
-    population_trajectories = []
+    population_trajectories = [False for g in shape[0]]
     trajectory_points = np.zeros([shape[0], shape[1] + 2, shape[2]])
     for i in range(shape[0]):
-        if fitness_calculated == True:
+        if fitness_calculated:
             continue
-        ch_with_start = np.insert(sorted_population[i, :, :], 0, left_end, axis=0)
+        ch_with_start = np.insert(formatted_population[i, :, :], 0, left_end, axis=0)
         chrome_all_pts = np.insert(ch_with_start, (shape[1] + 1), right_end, axis=0)
-
-        population_trajectories.append(sc.PchipInterpolator(chrome_all_pts[:, 0], chrome_all_pts[:, 1]))
+        population_trajectories[i] = sc.PchipInterpolator(chrome_all_pts[:, 0], chrome_all_pts[:, 1])
         trajectory_points[i, :, :] = chrome_all_pts
     return trajectory_points, population_trajectories
 
@@ -102,8 +110,9 @@ def path_points(y, epsilon, start, end):
     epsilon usage: increasing it will improve resolution at the cost of more points to work on.
                    decreasing it will improve computation time at the cost of resolution
 
-    :return: (2 x N) array of (X, Y) coordinates of points, where N = no. of points
+    :return: (N x 2) array of (X, Y) coordinates of points, where N = no. of points
     (N is variable to accomodate for equal disatnce between consecutive points)
+    the points are the path points as the arm travels from the start point to the end point.
     """
     # temporary lists to store x and y coordinates
     pt_x = [start[0]]
@@ -113,7 +122,7 @@ def path_points(y, epsilon, start, end):
     # iterator point
     x = start[0]
 
-    if start[0] < end[0]:
+    if start[0] < end[0]:   #start point is on left side
         while x < end[0]:
             del_x = epsilon / np.sqrt(der(x) ** 2 + 1)
             if (x + del_x) < end[0]:
@@ -130,7 +139,7 @@ def path_points(y, epsilon, start, end):
             if (x - del_x) > end[0]:
                 pt_x.append(x - del_x)
                 pt_y.append(y(x - del_x))
-                x += del_x
+                x -= del_x
             else:
                 pt_x.append(end[0])
                 pt_y.append(end[1])
@@ -237,8 +246,7 @@ def testing_fitness():
 
 
 def testing_fitness2():
-
     pop = np.array([[-2, 2, -1.8, 2, 1, 1]])
     print(fitness_population(pop, [2, 2], [-4, 0], [4, 0], [0, 5], .1, .5))
 
-print(timeit.timeit(testing_fitness2(), 'import numpy as np import scipy.interpolate as sc import matplotlib.pyplot as plt', 10))
+#print(timeit.timeit(testing_fitness2(), 'import numpy as np import scipy.interpolate as sc import matplotlib.pyplot as plt', 10))
