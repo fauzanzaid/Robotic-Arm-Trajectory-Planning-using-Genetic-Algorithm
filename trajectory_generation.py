@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.interpolate as sc
 import matplotlib.pyplot as plt
-#import three_arm
+import three_link
 import timeit
 
 '''
@@ -79,11 +79,12 @@ def check_point_validity(formatted_population, link_len) -> list:
 
 
 def check_trajectory_validity(trajectory, obstacles):
-    # obstacles are as: [x1, x2, ... xn]
-    #                  [y1, y2, ... yn]
-    #
-    ''' check for purohit's function'''
-    # check for dimensionality while getting changes
+    '''
+    :param trajectory:
+    :param obstacles: (x, y) coordinates in the form of :   [x1, x2, ... xn]  (2 x N matrix)
+                                                            [y1, y2, ... yn]
+    :return: single boolean value of 'validity'
+    '''
 
     if np.any(trajectory(obstacles[0]) > obstacles[1]):  # value of path at x is greater than y coord of point
         validity = False
@@ -144,7 +145,7 @@ def path_points(y, epsilon, start, end):
 
 def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilon, mu):
     """
-    envelope function for complete fitness calculation
+    Envelope function for complete fitness calculation
     Order of operations:
     1. point checking       (set fitness to zero for invalid)
     2. path interpolation
@@ -153,7 +154,6 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     5. Path checking        (check order here)
     5. fitness calculation
     """
-
     arm1 = three_link.Arm3Link(link_len)
 
     pop_size = np.shape(population)[0]
