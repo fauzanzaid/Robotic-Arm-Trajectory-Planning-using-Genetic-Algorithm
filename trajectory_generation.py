@@ -39,7 +39,7 @@ def generate_trajectories(formatted_population, start, end, fitness_calculated):
         right_end = end
     else:
         left_end = end
-    population_trajectories = [False for g in shape[0]]
+    population_trajectories = [False for g in range(shape[0])]
     trajectory_points = np.zeros([shape[0], shape[1] + 2, shape[2]])
     for i in range(shape[0]):
         if fitness_calculated:
