@@ -5,12 +5,19 @@ np.random.seed(1)
 
 class GeneticAlgorithm:
     
-    def __init__(self, link_lengths, points_obs, fitness, population_size=120, mutation_percent=0.05, generations=500):
+    def __init__(self, link_lengths, start_cood, end_cood, obs_coods, fitness, mu=[0.4,0.2,0.1], epsilon=0.1, population_size=120, mutation_percent=0.05, generations=500):
         self.L1 = link_lengths[0]
         self.L2 = link_lengths[1]
-        self.points_obs = points_obs
-        self.fitness = fitness # fitenss function, takes population as input
         
+        self.start_cood = start_cood
+        self.end_cood = end_cood
+        self.obs_coods = obs_coods
+        self.fitness = fitness # fitenss function, takes population as input
+        self.mu = mu
+        self.epsilon = epsilon
+
+        self.fitness_params = (link_lengths, start_cood, end_cood, obs_coods, epsilon, mu)
+
         self.L = 12
         self.x_min = 0                   
         self.x_max = pow(2,self.L)-1          
@@ -30,9 +37,9 @@ class GeneticAlgorithm:
 
 
     def n_obstacles_interior(self):
-        points_obs = np.array(self.points_obs)
-        x_interior = points_obs[:,0]
-        y_interior = points_obs[:,1]
+        obs_coods = np.array(self.obs_coods)
+        x_interior = obs_coods[:,0]
+        y_interior = obs_coods[:,1]
         distance = np.sqrt((x_interior-2047.5)*(x_interior-2047.5)+(y_interior-2047.5)*(y_interior-2047.5)) #distance of interior point from centre
         #taking only valid interior points (i.e. points between R1 and R2)
         distance = (distance>self.R2)
@@ -66,7 +73,7 @@ class GeneticAlgorithm:
     def run(self):
         chromosome = self.chromosome_init()    #getting initial random chromosome
 
-        fitness_row = self.fitness(chromosome)    #return a matrix which has fitness of respective input chromosomes
+        fitness_row = self.fitness(chromosome, *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
         # fitness_row = np.random.rand(self.population_size)  #remove it later on
 
         # s = 0
@@ -107,7 +114,7 @@ class GeneticAlgorithm:
             chromosome = new_chromosome
             # s = s+1               #incrementing generation
 
-            fitness_row = self.fitness(chromosome)    #return a matrix which has fitness of respective input chromosomes
+            fitness_row = self.fitness(chromosome, *self.fitness_params)    #return a matrix which has fitness of respective input chromosomes
             # fitness_row = np.random.rand(self.population_size)  #remove it later on
             self.fitness_stats.append(max(fitness_row))
         
