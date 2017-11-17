@@ -14,7 +14,6 @@ format(population):
     takes a population matrix andconverts into a 3D matrix for better use for generate_trajectories function.
 
 check_point_validity(sorted_population, link1, link2)    
-
 '''
 
 
@@ -80,7 +79,6 @@ def check_point_validity(formatted_population, link1, link2) -> list:
 def cleanse_chromosomes(sorted_population, validity):
     ''' maybe not required '''
     size = len(validity)
-    print(sorted_population, '\n', validity)
     clean_population = sorted_population
     for i in range(size):
         if validity[size-i-1] == False:
@@ -172,34 +170,23 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
 
     for i in range(pop_size):
         traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
-        #print(traj_points)
 
-        abc = np.linspace(-4,4,100)
-        plt.plot(traj_points[:,0],traj_points[:,1])
-        #plt.plot(abc, trajectories[i](abc))
-        plt.show()
-
-        #
-        #mystery function by purohit to give me angle values (theta matrix)
         theta = np.array(arm1.time_series(traj_points))
 
-        #mystery function by purohit to give me path validity
         validity = check_trajectory_validity(trajectories[i], obstacles)
-        print(fitness_chrome(theta, mu))
         if validity == False:
             fitness_pop[i] = 0
             fitness_calculated[i] = True
         else:
             fitness_pop[i] = fitness_chrome(theta, mu)
             fitness_calculated[i] = True
-    print(formatted_pop)
-    return population, fitness_pop
+    return np.array(fitness_pop)
 
 def fitness_chrome(theta, mu):
     # check for mu dependency on links
     '''
     :param theta: 2 x N matrix of link angles at discrete points
-    :param mu: fitness parameter. see inital note for setting mu
+    :param mu: fitness parameters' list. see initial note for setting mu
     :return: fitness value of the chromosome
     theta in format of
     [ th11 th12 th13 th14 ... th1n]     link 1 angles
@@ -215,28 +202,14 @@ def fitness_chrome(theta, mu):
     theta_i = theta[:, 0:div-2]
     theta_j = theta[:, 1:div-1]
     del_theta = abs(theta_j - theta_i)
-    fitness = 0
-    print('del', theta_i, theta_j)
+    fitness = np.inf
     for i in range(div-2):
-        fitness += mu*del_theta[0, i] + (1-mu)*del_theta[1, i]
+        for j in len(mu):
+            fitness += mu[j]*theta[j, i]
     return fitness
 
-def testing_2():
-    #test case
-    X = [1, 2, 3, 4, 5, 6]
-    Y = [0, 2, 3, 3, 2, 0]
-    y = sc.PchipInterpolator(X, Y)
-    epsilon = 0.01
-    start = [1, 0]
-    end = [6, 0]
 
-    k = path_points(y, epsilon, start, end)
-    print(k)
-    plt.plot(k[0, :], k[1, :], 'ro')
-    plt.show()
-    print(fitness_chromosome(k, 0.5))
-
-def testing():
+def testing_fitness():
     test_mat = np.array([[1.1, 2.2, 1.5, 2, -1, 1.3],
                          [-2, 1.5, 2, 2, 0, 0.75],
                          [0.5, 0.5, 1, 0.7, -2, 0.5]])
@@ -256,12 +229,6 @@ def testing():
         ap = plt.plot(points[i, :, 0], points[i, :, 1], 'ro')
     plt.show()
 
-
-
-def radius_bounds(chrome):
-    k = np.linalg.norm(chrome, axis=1)
-    print(k)
-def test():
+def testing_fitness2():
     pop = np.array([[-2,2,-1.8,2,1,1]])
     print(fitness_population(pop,[2,2],[-4,0],[4,0],[0,5],.1,.5))
-test()
