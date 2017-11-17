@@ -260,8 +260,13 @@ def testing_fitness():
 
 
 def testing_fitness2():
-    pop = np.array([[-2, 2, -1.8, 2, 2, 2]])
-    print(fitness_population(pop, [2, 2], [-4, 0], [4, 0], [0, 5], .1, [.5]))
+    pop = np.array([[-2, 2, -1.8, 2, 2, 2], [-1.5, 2.5, -0.5, 3, 2.5, 1]])
+    link_len = [2,2]
+    start = [-4, 0]
+    end = [4, 0]
+    obst = [0, 5]
+    mu = [0.5]
+    print(fitness_population(pop, link_len, start, end, obst, .1, mu))
 
 #testing_fitness2()
 
