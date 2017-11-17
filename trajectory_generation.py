@@ -184,7 +184,7 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     fitness_calculated = [False for i in range(pop_size)]  # stores fitness calculation validity
 
     formatted_pop = format(population)
-    pt_validity = check_point_validity(formatted_pop, link_len)
+    pt_validity = check_point_validity(formatted_pop, link_len, start_pt, end_pt)
     for i in range(len(fitness_calculated)):
         if pt_validity[i] == False:
             cost_pop[i] = np.inf
