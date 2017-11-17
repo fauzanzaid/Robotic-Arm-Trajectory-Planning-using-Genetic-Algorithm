@@ -23,15 +23,20 @@ def generate_trajectories(sorted_population, start, end, fitness_calculated):
     #It is then arranged in the order of x coordinated. Start and End point coordinates are then added to the array.
     #then the trajectories are generated.
     shape = np.shape(sorted_population)
-    left_end
+    left_end,right_end = start,start
+    if start[0] <end[0]:
+        right_end = end
+    else :
+        left_end = end
     population_trajectories = []
     trajectory_points = np.zeros([shape[0], shape[1]+2, shape[2]])
     for i in range(shape[0]):
         if fitness_calculated == True:
             continue
-        ch_with_start = np.insert(sorted_population[i, :, :], 0, start, axis=0)
-        chrome_all_pts = np.insert(ch_with_start, (shape[1] + 1), end, axis=0)
-        population_trajectories.append(sc.PchipInterpolator(chrome_all_pts[:, 0], chrome_all_pts[:, 1]))
+        ch_with_start = np.insert(sorted_population[i, :, :], 0, left_end, axis=0)
+        chrome_all_pts = np.insert(ch_with_start, (shape[1] + 1), right_end, axis=0)
+
+        population_trajectories.append(sc.PchipInterpolator(chrome_all_pts[:, 0], chrome_all_pts[:,1]))
         trajectory_points[i, :, :] = chrome_all_pts
     return trajectory_points, population_trajectories
 
@@ -68,6 +73,7 @@ def check_point_validity(formatted_population, link1, link2) -> list:
                 validity.append(False)
         else:
             validity.append(False)
+    
     return validity
 
 
@@ -89,7 +95,7 @@ def check_trajectory_validity(trajectory, obstacles):
     ''' check for purohit's function'''
     #check for dimensionality while getting changes
 
-    if any(trajectory(obstacles[0]) > obstacles[1]):           #value of path at x is greater than y coord of point
+    if np.any(trajectory(obstacles[0]) > obstacles[1]):           #value of path at x is greater than y coord of point
         validity = False
     else:
         validity = True
@@ -147,7 +153,7 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     5. fitness calculation
     """
     link1, link2 = link_len[0], link_len[1]
-    arm1 = Arm(link_len)
+    arm1 = invkin.Arm(link_len)
 
     pop_size = np.shape(population)[0]
 
@@ -156,7 +162,7 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
 
     formatted_pop = format(population)
     pt_validity = check_point_validity(formatted_pop, link1, link2)
-
+    
     for i in range(len(fitness_calculated)):
         if pt_validity[i] == False:
             fitness_pop[i] = 0
@@ -166,19 +172,27 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
 
     for i in range(pop_size):
         traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
+        #print(traj_points)
+
+        abc = np.linspace(-4,4,100)
+        plt.plot(traj_points[:,0],traj_points[:,1])
+        #plt.plot(abc, trajectories[i](abc))
+        plt.show()
+
         #
         #mystery function by purohit to give me angle values (theta matrix)
-        theta = arm1.time_series(traj_points)
+        theta = np.array(arm1.time_series(traj_points))
 
         #mystery function by purohit to give me path validity
         validity = check_trajectory_validity(trajectories[i], obstacles)
+        print(fitness_chrome(theta, mu))
         if validity == False:
             fitness_pop[i] = 0
             fitness_calculated[i] = True
         else:
             fitness_pop[i] = fitness_chrome(theta, mu)
             fitness_calculated[i] = True
-
+    print(formatted_pop)
     return population, fitness_pop
 
 def fitness_chrome(theta, mu):
@@ -195,12 +209,14 @@ def fitness_chrome(theta, mu):
     div = no. of theta divisions, 1 dimension of theta matrix
     '''
     #check this while changing code for different input format
-    div = np.shape(theta)[1]
+    
     theta = theta.T
+    div = np.shape(theta)[1]
     theta_i = theta[:, 0:div-2]
     theta_j = theta[:, 1:div-1]
     del_theta = abs(theta_j - theta_i)
     fitness = 0
+    print('del', theta_i, theta_j)
     for i in range(div-2):
         fitness += mu*del_theta[0, i] + (1-mu)*del_theta[1, i]
     return fitness
@@ -240,8 +256,12 @@ def testing():
         ap = plt.plot(points[i, :, 0], points[i, :, 1], 'ro')
     plt.show()
 
-testing()
+
 
 def radius_bounds(chrome):
     k = np.linalg.norm(chrome, axis=1)
     print(k)
+def test():
+    pop = np.array([[-2,2,-1.8,2,1,1]])
+    print(fitness_population(pop,[2,2],[-4,0],[4,0],[0,5],.1,.5))
+test()
