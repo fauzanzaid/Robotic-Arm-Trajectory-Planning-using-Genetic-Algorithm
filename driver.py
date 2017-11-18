@@ -5,6 +5,7 @@
 import os
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from plotter import Plotter
 from genetic_algorithm import GeneticAlgorithm
@@ -191,8 +192,10 @@ while True:
 	arm = Arm(link_lengths) if len(link_lengths) == 2 else Arm3Link(np.array(link_lengths))
 	link_angles_series = np.degrees(arm.time_series(output_path))
 
+	plt.plot(ga.fitness_stats)
+	plt.show()
+	
 	plotter.transition_show(link_angles_series)
-
 
 	usr_input = input("\nTry again? [y/n] ")
 	if usr_input == 'y':
