@@ -40,7 +40,7 @@ class Plotter():
 
 		# Two circles
 		circle1 = plt.Circle((0,0), self.link_lengths[0], color='0.9', fill=False)
-		circle2 = plt.Circle((0,0), self.link_lengths[0]+self.link_lengths[1], color='0.9', fill=False)
+		circle2 = plt.Circle((0,0), sum(self.link_lengths), color='0.9', fill=False)
 		ax.add_artist(circle1)
 		ax.add_artist(circle2)
 
