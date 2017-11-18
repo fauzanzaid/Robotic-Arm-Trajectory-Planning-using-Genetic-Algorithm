@@ -128,6 +128,7 @@ while True:
 	ga_genr = 10
 	ga_pop_sz = 20
 	ga_mut_ratio = 0.05
+	ga_xov_ratio = 0.30
 	ga_mu_2 = [0.5,0.5]
 	ga_mu_3 = [0.4,0.3,0.3]
 	ga_mu = None
@@ -183,7 +184,7 @@ while True:
 
 	ga_mu = ga_mu_2 if len(link_lengths) == 2 else ga_mu_3
 
-	ga = GeneticAlgorithm(link_lengths, start_cood, end_cood, obs_coods, tg.fitness_population, ga_mu, ga_eps, ga_pop_sz, ga_mut_ratio, ga_genr)
+	ga = GeneticAlgorithm(link_lengths, start_cood, end_cood, obs_coods, tg.fitness_population, ga_mu, ga_eps, ga_pop_sz, ga_mut_ratio, ga_xov_ratio, ga_genr)
 	output_chr = ga.run()
 	print("Done")
 
