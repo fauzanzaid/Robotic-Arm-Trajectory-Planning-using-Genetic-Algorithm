@@ -97,9 +97,11 @@ class GeneticAlgorithm:
         # s = 0
         # while(s<self.generations):
         for genr in range(self.generations):
-
+            
+            print("*", end="", flush=True)
+            
             roulette_wheel_cdf = np.cumsum(fitness_row/np.sum(fitness_row))    #cdf 
-            crossover_point = np.random.randint(self.k-1) if self.k != 0 else 0                      #random crossover point 
+            crossover_point = np.random.randint(self.k-1) if self.k != 1 else 0                      #random crossover point 
             index = np.zeros((2))
             new_chromosome = np.zeros((self.population_size,2*self.k))
 
@@ -139,6 +141,8 @@ class GeneticAlgorithm:
             # fitness_row = np.random.rand(self.population_size)  #remove it later on
             self.fitness_stats.append(max(fitness_row))
             # print(fitness_row)
+        
+        print()
 
         # print(chromosome)
         # fitness_row = self.fitness(chromosome, *self.fitness_params)
