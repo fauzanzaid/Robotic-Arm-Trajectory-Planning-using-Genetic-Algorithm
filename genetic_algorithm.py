@@ -121,11 +121,9 @@ class GeneticAlgorithm:
                     new_chromosome[2*i+0,2*crossover_point+1:2*self.k] = parent[1,2*crossover_point+1:2*self.k]
                     new_chromosome[2*i+1,0:2*crossover_point+1] = parent[1,0:2*crossover_point+1]
                     new_chromosome[2*i+1,2*crossover_point+1:2*self.k] = parent[0,2*crossover_point+1:2*self.k]
-                    print("yes")
                 else:
                     new_chromosome[2*i+0] = parent[0]
                     new_chromosome[2*i+1] = parent[1]
-                    print("no")
 
             # print(new_chromosome)
 
