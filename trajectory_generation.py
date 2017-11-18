@@ -179,7 +179,8 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     elif len(link_len) == 2:
         arm1 = invkin.Arm(link_len)
 
-    pop_size = np.shape(population)[0]
+    #pop_size = np.shape(population)[0]
+    pop_size = 1
 
     cost_pop = [np.inf for i in range(pop_size)]  # stores fitness values
     fitness_calculated = [False for i in range(pop_size)]  # stores fitness calculation validity
@@ -187,7 +188,7 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     formatted_pop = format(population)
     pt_validity = check_point_validity(formatted_pop, link_len, start_pt, end_pt)
     #print(pt_validity)
-    for i in range(len(fitness_calculated)):
+    for i in range(pop_size):
         if pt_validity[i] == False:
             cost_pop[i] = np.inf
             fitness_calculated[i] = True
@@ -197,6 +198,11 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     for i in range(pop_size):
         if fitness_calculated[i] == False:
             traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
+            plt.plot(traj_points[:, 0], traj_points[:, 1])
+            t = np.linspace(-4, 4, 100)
+            plt.plot(t, np.sqrt(4 - t**2))
+            plt.plot(t, np.sqrt(16 - t ** 2))
+            plt.show()
             theta = np.array(arm1.time_series(traj_points))
             validity = check_trajectory_validity(trajectories[i], obstacles)
             if validity == False:
@@ -205,10 +211,10 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
                 cost_pop[i] = fitness_chrome(theta, mu)
             fitness_calculated[i] = True
 
-    # fitness_pop = 1/np.array(cost_pop)
-    fitness_pop = np.array(cost_pop)
+    fitness_pop = 1/np.array(cost_pop)
+    #fitness_pop = np.array(cost_pop)
 
-    return np.array(fitness_pop)
+    return np.array(fitness_pop), traj_points
 
 
 def fitness_chrome(theta, mu):
@@ -260,7 +266,11 @@ def testing_fitness():
 
 
 def testing_fitness2():
-    pop = np.array([[-2, 2, -1.8, 2, 2, 2], [-1.5, 2.5, -0.5, 3, 2.5, 1]])
+    pop_x = np.random.rand(3, 3)*8-4*np.ones(3)
+    pop_y = np.random.rand(3, 3)*4-4*np.ones(3)
+    pop = np.append(pop_x, pop_y)
+    print(pop)
+    #pop = np.array([[-2, 2, -1.8, 2, 2, 2], [-1.5, 2.5, -0.5, 3, 2.5, 1]])
     link_len = [2,2]
     start = [-4, 0]
     end = [4, 0]
