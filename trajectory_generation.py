@@ -52,15 +52,41 @@ def generate_trajectories(formatted_population, start, end, fitness_calculated):
     return trajectory_points, population_trajectories
 
 
+def chrome_traj(chrome, start, end):
+    sorted_chrome = format(chrome)
+    sh = np.shape(sorted_chrome)
+    left_end, right_end = start, start
+    if start[0] < end[0]:
+        right_end = end
+    else:
+        left_end = end
+    K = sh[1]
+    ch_with_start = np.insert(sorted_chrome, 0, left_end, axis=1)
+    chrome_all_pts = np.insert(ch_with_start, (K + 1), right_end, axis=1)
+    ch_x, ch_y = chrome_all_pts[:, :, 0][0], chrome_all_pts[:, :, 1][0]
+    trajectory = sc.PchipInterpolator(ch_x, ch_y)
+    traj_points = path_points(trajectory, 0.1, start, end)
+    return traj_points
+
+
 def format(population) -> object:
     '''
     :param population: complete population in 2D matrix (P x 2k)
     :return: sorted_population: 3D array (P x k x 2)
     '''
     shape = np.shape(population)
-    formatted_population = np.zeros([shape[0], int(shape[1] / 2), 2])
-    for i in range(shape[0]):
-        chrome = np.reshape(population[i, :], [int(shape[1] / 2), 2])
+    if len(shape) == 1:
+        P = 1
+        K = int(shape[0]/2)
+    elif len(shape) == 2:
+        P = shape[0]
+        K = int(shape[1]/2)
+    formatted_population = np.zeros([P, K, 2])
+    for i in range(P):
+        if P == 1:
+            chrome = np.reshape(population, [K, 2])
+        else:
+            chrome = np.reshape(population[i, :], [K, 2])
         chrome_sorted = chrome[chrome[:, 0].argsort()].transpose()
         formatted_population[i, :, :] = chrome_sorted.transpose()
     return formatted_population
@@ -163,7 +189,7 @@ def path_points(y, epsilon, start, end):
     return points.transpose()
 
 
-def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilon, mu):
+def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilon, mu, Single=False):
     """
     Envelope function for complete fitness calculation
     Order of operations:
@@ -179,15 +205,17 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     elif len(link_len) == 2:
         arm1 = invkin.Arm(link_len)
 
-    pop_size = np.shape(population)[0]
+    if Single == True:
+        pop_size = 1
+    else:
+        pop_size = np.shape(population)[0]
 
     cost_pop = [np.inf for i in range(pop_size)]  # stores fitness values
     fitness_calculated = [False for i in range(pop_size)]  # stores fitness calculation validity
 
     formatted_pop = format(population)
     pt_validity = check_point_validity(formatted_pop, link_len, start_pt, end_pt)
-    #print(pt_validity)
-    for i in range(len(fitness_calculated)):
+    for i in range(pop_size):
         if pt_validity[i] == False:
             cost_pop[i] = np.inf
             fitness_calculated[i] = True
@@ -197,6 +225,11 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     for i in range(pop_size):
         if fitness_calculated[i] == False:
             traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
+            plt.plot(traj_points[:, 0], traj_points[:, 1])
+            t = np.linspace(-4, 4, 100)
+            plt.plot(t, np.sqrt(4 - t**2))
+            plt.plot(t, np.sqrt(16 - t ** 2))
+            plt.show()
             theta = np.array(arm1.time_series(traj_points))
             validity = check_trajectory_validity(trajectories[i], obstacles)
             if validity == False:
@@ -205,10 +238,10 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
                 cost_pop[i] = fitness_chrome(theta, mu)
             fitness_calculated[i] = True
 
-    # fitness_pop = 1/np.array(cost_pop)
-    fitness_pop = np.array(cost_pop)
+    fitness_pop = 1/np.array(cost_pop)
+    #fitness_pop = np.array(cost_pop)
 
-    return np.array(fitness_pop)
+    return np.array(fitness_pop), traj_points
 
 
 def fitness_chrome(theta, mu):
@@ -249,7 +282,6 @@ def testing_fitness():
     link2 = 3
     sorted_mat = format(test_mat)
     v = check_point_validity(sorted_mat, link1, link2)
-    clean_population = cleanse_chromosomes(sorted_mat, v)
     points, trajectories = generate_trajectories(clean_population, start_pt, end_pt)
     check_trajectory_validity(trajectories, obst)
     t = np.linspace(-3, 3, 100)
@@ -260,16 +292,29 @@ def testing_fitness():
 
 
 def testing_fitness2():
-    pop = np.array([[-2, 2, -1.8, 2, 2, 2], [-1.5, 2.5, -0.5, 3, 2.5, 1]])
+    #pop_x = np.random.rand(3, 3)*8-4*np.ones(3)
+    #pop_y = np.random.rand(3, 3)*4-4*np.ones(3)
+    #pop = np.append(pop_x, pop_y)
+    #print(pop)
+    #pop = np.array([[-2, 2, -1.8, 2, 2, 2], [-1.5, 2.5, -0.5, 3, 2.5, 1]])
+    pop = np.array([-1.5, 2.5, -0.5, 3, 2.5, 1])
     link_len = [2,2]
     start = [-4, 0]
     end = [4, 0]
     obst = [0, 5]
     mu = [0.5]
-    print(fitness_population(pop, link_len, start, end, obst, .1, mu))
+    mat = chrome_traj(pop, start, end)
+    fit, traj = fitness_population(pop, link_len, start, end, obst, .1, mu, Single=True)
+    #print(traj)
 
 #testing_fitness2()
 
 def test_time():
-    print(timeit.timeit(testing_fitness2(),
-                        'import numpy as np import scipy.interpolate as sc import matplotlib.pyplot as plt', 10))
+    #print(timeit.timeit(testing_fitness2(),
+     #                   'import numpy as np import scipy.interpolate as sc import matplotlib.pyplot as plt', 10))
+    #a = np.ones([1, 4, 3])
+    #sh = a.shape
+    #print(len(sh), sh,  a)
+    testing_fitness2()
+
+#test_time()
