@@ -225,11 +225,11 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
     for i in range(pop_size):
         if fitness_calculated[i] == False:
             traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
-            plt.plot(traj_points[:, 0], traj_points[:, 1])
-            t = np.linspace(-4, 4, 100)
-            plt.plot(t, np.sqrt(4 - t**2))
-            plt.plot(t, np.sqrt(16 - t ** 2))
-            plt.show()
+            # plt.plot(traj_points[:, 0], traj_points[:, 1])
+            # t = np.linspace(-4, 4, 100)
+            # plt.plot(t, np.sqrt(4 - t**2))
+            # plt.plot(t, np.sqrt(16 - t ** 2))
+            # plt.show()
             theta = np.array(arm1.time_series(traj_points))
             validity = check_trajectory_validity(trajectories[i], obstacles)
             if validity == False:
