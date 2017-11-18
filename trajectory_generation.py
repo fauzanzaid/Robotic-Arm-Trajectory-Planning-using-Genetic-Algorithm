@@ -222,6 +222,7 @@ def fitness_population(population, link_len, start_pt, end_pt, obstacles, epsilo
 
     points, trajectories = generate_trajectories(formatted_pop, start_pt, end_pt, fitness_calculated)
     #print(trajectories)
+    traj_points = None
     for i in range(pop_size):
         if fitness_calculated[i] == False:
             traj_points = path_points(trajectories[i], epsilon, start_pt, end_pt)
