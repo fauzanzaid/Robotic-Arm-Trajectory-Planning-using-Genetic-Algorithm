@@ -76,7 +76,7 @@ class GeneticAlgorithm:
 
 
     def fitness_mod(self,chromosome):
-        fitness_row = 1/self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)
+        fitness_row, _ = self.fitness(self.chromosome_to_points(chromosome), *self.fitness_params)
         for i,v in enumerate(fitness_row):
             if np.isnan(v):
                 fitness_row[i] = 0
