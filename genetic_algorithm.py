@@ -45,7 +45,7 @@ class GeneticAlgorithm:
         distance = np.sqrt(x_interior**2+y_interior**2) #distance of interior point from centre
         #taking only valid interior points (i.e. points between R1 and R2)
         
-        distance = (distance<self.R2)
+        distance = (distance<self.R1)
         return len(distance[distance==True])
 
 
@@ -65,7 +65,11 @@ class GeneticAlgorithm:
             chrom_valid = False
             
             while chrom_valid == False:
-                random_chrom = np.random.randint(2**self.L,size=[self.k,2])
+                # random_chrom = np.random.randint(2**self.L,size=[self.k,2])
+                random_chrom_x = np.random.randint(2**self.L,size=[self.k])
+                random_chrom_y = np.random.randint(2**(self.L-1),size=[self.k]) + 2**(self.L-1)
+                random_chrom = np.column_stack((random_chrom_x,random_chrom_y))
+
                 distance = np.sqrt((random_chrom[:,0]-centre_cood[0])**2+(random_chrom[:,1]-centre_cood[1])**2)
 
                 if np.all(distance_min < distance) and np.all(distance_max > distance):
