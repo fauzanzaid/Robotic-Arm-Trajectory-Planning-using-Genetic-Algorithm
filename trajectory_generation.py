@@ -114,7 +114,10 @@ def check_point_validity(formatted_population, link_len, start, end) -> list:
             validity.append(False)
         elif np.all(r > link_len[0]):
             if np.all(r < (sum(link_len))):
-                validity.append(True)
+                if np.all(formatted_population[i,:,1] > 0):
+                    validity.append(True)
+                else:
+                    validity.append(False)
             else:
                 validity.append(False)
         else:
@@ -130,8 +133,10 @@ def check_trajectory_validity(trajectory, obstacles):
                                                             [y1, y2, ... yn]
     :return: single boolean value of 'validity'
     '''
+    obstacles = np.array(obstacles)
+    # print(trajectory(obstacles[:,0]), obstacles[:,1])
 
-    if np.any(trajectory(obstacles[0]) > obstacles[1]):  # value of path at x is greater than y coord of point
+    if np.any(trajectory(obstacles[:,0]) > obstacles[:,1]):  # value of path at x is greater than y coord of point
         validity = False
     else:
         validity = True

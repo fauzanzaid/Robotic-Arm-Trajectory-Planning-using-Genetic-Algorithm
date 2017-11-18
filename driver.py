@@ -4,10 +4,13 @@
 
 import os
 
+import numpy as np
+
 from plotter import Plotter
-# from genetic_algorithm import GeneticAlgorithm
-# import trajectory_generation as tg
-# from invkin import Arm
+from genetic_algorithm import GeneticAlgorithm
+import trajectory_generation as tg
+from invkin import Arm
+from three_link import Arm3Link
 
 
 
@@ -22,7 +25,7 @@ class ProblemParams:
 
 
 preset_params = [
-	ProblemParams("No obstacles", [4,3], [4,4], [-5,3], []),
+	ProblemParams("Test", [5,3], [-6,0], [6,0], [[7,3],[4,4], [-5,3], [-4,-4]]),
 	ProblemParams("Two obstacles", [4,3], [4,4], [-5,3], [[2,5],[-3,4]]),
 ]
 
@@ -85,6 +88,9 @@ def select_link_lengths():
 			return 'q'
 		elif links_num.isdigit():
 			links_num = int(links_num)
+			if links_num < 2 or links_num > 3:
+				print("Invalid input! Enter two or three")
+				links_num = None
 		else:
 			print("Invalid input!")
 			links_num = None
@@ -117,7 +123,15 @@ while True:
 	start_cood = None
 	end_cood = None
 	obs_coods = None
-	
+
+	ga_genr = 10
+	ga_pop_sz = 20
+	ga_mut_ratio = 0.05
+	ga_mu_2 = [0.5,0.5]
+	ga_mu_3 = [0.4,0.3,0.3]
+	ga_mu = None
+	ga_eps = 0.1
+
 	param_method = select_param_method()
 
 	if param_method == 'q':
@@ -157,18 +171,27 @@ while True:
 		end_cood = plotter.end_cood
 		obs_coods = plotter.obs_coods
 
+		if len(obs_coods) < 2:
+			print("Select atleast two obstacles!")
+			continue
+
 
 	os.system('cls' if os.name == 'nt' else 'clear')
 	print("Robotic arm trajectory using Genetic Algorithm\n")
 	print("Running genetic algorithm... ")
 
-	# ga = GeneticAlgorithm(link_lengths, obs_coods, 120, 0.05, 500)
-	# ga.fitness = tg.fitness
-	# output_chrs = ga.run()
+	ga_mu = ga_mu_2 if len(link_lengths) == 2 else ga_mu_3
+
+	ga = GeneticAlgorithm(link_lengths, start_cood, end_cood, obs_coods, tg.fitness_population, ga_mu, ga_eps, ga_pop_sz, ga_mut_ratio, ga_genr)
+	output_chr = ga.run()
 	print("Done")
 
-	# link_angles_series = None
-	# plotter.transition_show(link_angles_series)
+	output_path = tg.chrome_traj(output_chr, start_cood, end_cood)
+
+	arm = Arm(link_lengths) if len(link_lengths) == 2 else Arm3Link(np.array(link_lengths))
+	link_angles_series = np.degrees(arm.time_series(output_path))
+
+	plotter.transition_show(link_angles_series)
 
 
 	usr_input = input("\nTry again? [y/n] ")
