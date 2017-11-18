@@ -42,7 +42,6 @@ class Arm :
         angle_series=[]
         for i in range(len(coordinate_series)):
             angle_series.append(self.inv_kin(coordinate_series[i]))
-        print("")
         return angle_series
 def test():
 
