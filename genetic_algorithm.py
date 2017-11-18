@@ -5,7 +5,7 @@ np.random.seed(1)
 
 class GeneticAlgorithm:
     
-    def __init__(self, link_lengths, start_cood, end_cood, obs_coods, fitness, mu=[0.4,0.2], epsilon=0.1, population_size=120, mutation_percent=0.05, generations=500):
+    def __init__(self, link_lengths, start_cood, end_cood, obs_coods, fitness, mu=[0.4,0.2], epsilon=0.1, population_size=120, mutation_percent=0.05, crossover_percent=0.30, generations=500):
         self.L1 = link_lengths[0]
         self.L2 = link_lengths[1]
         
@@ -30,6 +30,7 @@ class GeneticAlgorithm:
 
         self.population_size = population_size
         self.mutation_percent = mutation_percent
+        self.crossover_percent = crossover_percent
         self.generations = generations
         self.k = self.n_obstacles_interior() + 1
 
@@ -110,15 +111,21 @@ class GeneticAlgorithm:
             new_chromosome = np.zeros((self.population_size,2*self.k))
 
             for i in range(int(self.population_size/2)):                  #crossover
+
                 a = np.random.rand(2)
                 index = np.searchsorted(roulette_wheel_cdf, a)  
-
                 parent = np.array([chromosome[index[0]], chromosome[index[1]]])
 
-                new_chromosome[2*i+0,0:2*crossover_point+1] = parent[0,0:2*crossover_point+1]
-                new_chromosome[2*i+0,2*crossover_point+1:2*self.k] = parent[1,2*crossover_point+1:2*self.k]
-                new_chromosome[2*i+1,0:2*crossover_point+1] = parent[1,0:2*crossover_point+1]
-                new_chromosome[2*i+1,2*crossover_point+1:2*self.k] = parent[0,2*crossover_point+1:2*self.k]
+                if np.random.rand() < self.crossover_percent:
+                    new_chromosome[2*i+0,0:2*crossover_point+1] = parent[0,0:2*crossover_point+1]
+                    new_chromosome[2*i+0,2*crossover_point+1:2*self.k] = parent[1,2*crossover_point+1:2*self.k]
+                    new_chromosome[2*i+1,0:2*crossover_point+1] = parent[1,0:2*crossover_point+1]
+                    new_chromosome[2*i+1,2*crossover_point+1:2*self.k] = parent[0,2*crossover_point+1:2*self.k]
+                    print("yes")
+                else:
+                    new_chromosome[2*i+0] = parent[0]
+                    new_chromosome[2*i+1] = parent[1]
+                    print("no")
 
             # print(new_chromosome)
 
