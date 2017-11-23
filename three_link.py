@@ -4,7 +4,8 @@ import scipy.optimize
 
 class Arm3Link:
 
-    def __init__(self,L=None):
+    def __init__(self,Len=None):
+
         """Set up the basic parameters of the arm.
         order [link1(lowest link), link2, link3].
         input
@@ -12,14 +13,11 @@ class Arm3Link:
                 the arm segment lengths
         """
         # initial joint angles set randomly, they will be updated later
-        self.q = [.3, .3, 0] 
-        #A default arm positions
-        self.q0 = np.array([np.pi/4, np.pi/4, np.pi/4]) 
+        self.angles = [.3, .3, 0] 
+        # A default arm position(set randomly, any angles would work)
+        self.default = np.array([np.pi/4, np.pi/4, np.pi/4]) 
         # arm lengths
-        self.L = np.array([1, 1, 1]) if L is None else L
-
-        self.max_angles = [np.pi, np.pi, np.pi/4]
-        self.min_angles = [0, 0, -np.pi/4]
+        self.Len = np.array([1, 1, 1]) if Len is None else Len
 
     def inv_kin(self, xy):
         """
@@ -29,7 +27,7 @@ class Arm3Link:
             xy : tuple
                 the desired xy position of the arm
         returns : list
-            the optimal [shoulder, elbow, wrist] angle configuration
+            the optimal [link 1-shoulder, link 2- elbow, link 3-wrist] angle configuration
         """
 
         def distance_to_default(q, *args):
@@ -43,7 +41,7 @@ class Arm3Link:
                 euclidean distance to the default arm position
             """
             weight = [1, 1, 1.3]
-            return np.sqrt(np.sum([(qi - q0i)**2 * wi for qi, q0i, wi in zip(q, self.q0, weight)]))
+            return np.sqrt(np.sum([(qi - q0i)**2 * wi for qi, q0i, wi in zip(q, self.default, weight)]))
             
 
         def x_constraint(q, xy):
@@ -56,7 +54,7 @@ class Arm3Link:
             returns : array
                 the difference between current and desired x position
             """
-            x = (self.L[0]*np.cos(q[0]) + self.L[1]*np.cos(q[0]+q[1]) +self.L[2]*np.cos(np.sum(q))) - xy[0]
+            x = (self.Len[0]*np.cos(q[0]) + self.Len[1]*np.cos(q[0]+q[1]) +self.Len[2]*np.cos(np.sum(q))) - xy[0]
             return x
 
         def y_constraint(q, xy):
@@ -70,11 +68,11 @@ class Arm3Link:
             returns : array
                 the difference between current and desired x position
             """
-            y = (self.L[0]*np.sin(q[0]) + self.L[1]*np.sin(q[0]+q[1]) +self.L[2]*np.sin(np.sum(q))) - xy[1]
+            y = (self.Len[0]*np.sin(q[0]) + self.Len[1]*np.sin(q[0]+q[1]) +self.Len[2]*np.sin(np.sum(q))) - xy[1]
             return y
 
 
-        return scipy.optimize.fmin_slsqp(func=distance_to_default,x0=self.q,eqcons=[x_constraint,y_constraint],args=(xy,),iprint=0) 
+        return scipy.optimize.fmin_slsqp(func=distance_to_default,x0=self.angles,eqcons=[x_constraint,y_constraint],args=(xy,),iprint=0) 
 
     def time_series(self,coordinate_series):
         """
@@ -89,27 +87,27 @@ class Arm3Link:
             the series of angles for every coordinate provided
         """
         angle_series=[]
-        self.q = self.inv_kin(coordinate_series[0])
+        self.angles = self.inv_kin(coordinate_series[0])
 
         for i in range(len(coordinate_series)):
             angle_series.append(self.inv_kin(coordinate_series[i]))
-            self.q = self.inv_kin(coordinate_series[i])
+            self.angles = self.inv_kin(coordinate_series[i])
 
         return angle_series
 
 def test():
 
     arm = Arm3Link()
-    #x = np.arange(-.75, .75, .05)
+    
     x = [-.75,.5]
     y= [.25,.40]
-    #y = np.arange(.25, .75, .05)
+
     coordinate_series = list(zip(x,y))
     arm.time_series(coordinate_series)
-    #print(arm.time_series(coordinate_series))
+    print(arm.time_series(coordinate_series))
     
 
-test()
+#test()
 
 
 
