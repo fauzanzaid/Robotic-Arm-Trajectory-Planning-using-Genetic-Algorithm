@@ -12,12 +12,22 @@ class Arm :
             for a given set of angles
     '''
     def __init__(self,arm_lens):
-
+        """
+        Set the default parameters of the arm
+        input
+            arm_lens: array of the order [[link1(lowest link), link2]
+        """
+                    
         self.arm_lens = arm_lens
         #self.intial_position = intial_position
         #self.final_position = final_position
 
     def get_position(self,angles):
+        """
+        Returns the (x,y) coordinates of the arm, given its link angles
+        input
+            angles: array of the order [link1,link2]
+        """
 
         x = self.arm_lens[0]*np.cos(angles[0]) + self.arm_lens[1]* np.cos(angles[0]+angles[1])
         y = self.arm_lens[0]*np.sin(angles[0]) + self.arm_lens[1]* np.sin(angles[0]+angles[1])
@@ -26,6 +36,13 @@ class Arm :
     def inv_kin(self,final_coords):
         #if final_coords == None:
         #    print('Please pass final coordinates')
+        """
+        Returns the angles for a given (x,y) coordinate
+        The angle of link-2 is constrained to move between [0,pi]
+        input:
+            final_coords : array
+                            array of current joint angles
+        """
             
         # definition of a division to allow for the case division with 0
         D = div( (final_coords[0]**2 + final_coords[1]**2 - self.arm_lens[0]**2 - self.arm_lens[1]**2), 2*self.arm_lens[0]*self.arm_lens[1] )
@@ -39,6 +56,14 @@ class Arm :
         return np.array(angles)
 
     def time_series(self,coordinate_series):
+        """
+            Recursively calls  function inv_kin to calculate joint angles for every (x,y) coordinate
+            input:
+                coordinate_series: array of the order [[x1 y1],
+                                                       [x2 y2],..
+                                                        ...
+                                                       [xn yn]]
+        """
         angle_series=[]
         for i in range(len(coordinate_series)):
             angle_series.append(self.inv_kin(coordinate_series[i]))
@@ -51,9 +76,7 @@ def test():
     Arm1 = Arm(lengths)
 
     #print(Arm1.inv_kin())
-    
     #print(Arm1.get_position(Arm1.inv_kin()))
-    
     series = [[2,2],[3,3],[4,4]]
     print(Arm1.time_series(series))
 
