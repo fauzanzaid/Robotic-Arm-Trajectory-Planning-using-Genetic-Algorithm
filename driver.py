@@ -26,8 +26,10 @@ class ProblemParams:
 
 
 preset_params = [
-	ProblemParams("Test", [5,3], [-6,0], [6,0], [[7,3],[4,4], [-5,3], [-4,-4]]),
-	ProblemParams("Two obstacles", [4,3], [4,4], [-5,3], [[2,5],[-3,4]]),
+	ProblemParams("Two links, two obstacles", [4,4], [6.5,2.8], [-3.3,5.1], [[-0,5.3],[5.4,3.2]]),
+	ProblemParams("Two links, three obstacles", [4,4], [7,2.6], [-5,2.8], [[5,3.8],[1.7,5.8],[-2.5,5.8]]),
+	ProblemParams("Three links, two obstacles", [4,4,3], [8.1,4.9], [-7,5.8], [[5.5,7.7],[2.8,8.5]]),
+	ProblemParams("Three links, three obstacles", [4,4,3], [8.1,4.9], [-7,5.8], [[5.5,7.7],[2,9],[-2.8,8.5]]),
 ]
 
 
@@ -37,7 +39,7 @@ def select_param_method():
 	print("Robotic arm trajectory using Genetic Algorithm\n")
 	print("Select problem parameters:")
 	print("  1: Choose from presets")
-	print("  2: Custom")
+	# print("  2: Custom")
 	print("\n  q: Quit")
 
 	choice = None
@@ -125,8 +127,10 @@ while True:
 	end_cood = None
 	obs_coods = None
 
+	ga_genr_2 = 300
+	ga_genr_3 = 20
 	ga_genr = 10
-	ga_pop_sz = 20
+	ga_pop_sz = 40
 	ga_mut_ratio = 0.05
 	ga_xov_ratio = 0.30
 	ga_mu_2 = [0.5,0.5]
@@ -183,6 +187,7 @@ while True:
 	print("Running genetic algorithm... ")
 
 	ga_mu = ga_mu_2 if len(link_lengths) == 2 else ga_mu_3
+	ga_genr = ga_genr_2 if len(link_lengths) == 2 else ga_genr_3
 
 	ga = GeneticAlgorithm(link_lengths, start_cood, end_cood, obs_coods, tg.fitness_population, ga_mu, ga_eps, ga_pop_sz, ga_mut_ratio, ga_xov_ratio, ga_genr)
 	output_chr = ga.run()
@@ -193,8 +198,8 @@ while True:
 	arm = Arm(link_lengths) if len(link_lengths) == 2 else Arm3Link(np.array(link_lengths))
 	link_angles_series = np.degrees(arm.time_series(output_path))
 
-	plt.plot(ga.fitness_stats)
-	plt.show()
+	# plt.plot(ga.fitness_stats)
+	# plt.show()
 	
 	plotter.transition_show(link_angles_series)
 
